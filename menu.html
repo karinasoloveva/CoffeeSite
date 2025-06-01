@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <title>Меню напоїв та десертів</title>
+    <style>
+        body {
+            color: #222;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 25px;
+            color: #333;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+        }
+        .item {
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        #total {
+            margin-top: 30px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #444;
+            text-align: center;
+        }
+        #confirm-section {
+            display: none;
+            margin-top: 25px;
+            text-align: center;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 28px;
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            background: #556ee6;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background: #4058c4;
+        }
+        .payment-method {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+        }
+        .payment-method label {
+            margin-right: 25px;
+            cursor: pointer;
+        }
+        input[type="radio"] {
+            transform: scale(1.2);
+            margin-right: 8px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        #history-section {
+            max-width: 600px;
+            margin: 40px auto 0;
+        }
+        #order-history li {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>Меню напоїв та десертів</h1>
+    <form id="menu-form" onsubmit="calculateTotal(event)">
+        <div class="item"><input type="checkbox" value="100"> Американо — 100 грн</div>
+        <div class="item"><input type="checkbox" value="50"> Раф — 50 грн</div>
+        <div class="item"><input type="checkbox" value="30"> Зелений чай — 30 грн</div>
+        <div class="item"><input type="checkbox" value="35"> Чорний чай — 35 грн</div>
+        <div class="item"><input type="checkbox" value="50"> Лате — 50 грн</div>
+        <div class="item"><input type="checkbox" value="40"> Еспресо — 40 грн</div>
+        <div class="item"><input type="checkbox" value="45"> Трав'яний чай — 45 грн</div>
+        <div class="item"><input type="checkbox" value="70"> Мафін — 70 грн</div>
+        <div class="item"><input type="checkbox" value="210"> Шоколадний фондан — 210 грн</div>
+        <div class="item"><input type="checkbox" value="150"> Наполеон — 150 грн</div>
+        <div class="item"><input type="checkbox" value="110"> Тірамісу — 110 грн</div>
+        <div class="item"><input type="checkbox" value="70"> Круасан — 70 грн</div>
+        <div class="item"><input type="checkbox" value="80"> Маффін з шоколадом — 80 грн</div>
+
+        <button type="submit">Показати суму</button>
+    </form>
+
+    <div id="total"></div>
+
+    <div id="confirm-section">
+        <div class="payment-method">
+            <label><input type="radio" name="payment" value="cash" checked> Готівкою</label>
+            <label><input type="radio" name="payment" value="online"> Онлайн</label>
+        </div>
+        <button onclick="placeOrder()">Замовити</button>
+    </div>
+
+    <div id="history-section">
+        <h2 style="text-align:center;">Історія замовлень</h2>
+        <ul id="order-history" style="list-style: none; padding: 0;"></ul>
+        <div style="text-align: center;">
+            <button onclick="clearHistory()" style="background-color: #e74c3c;">Очистити історію</button>
+        </div>
+    </div>
+
+    <script>
+        function calculateTotal(event) {
+            event.preventDefault();
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let total = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseFloat(cb.value);
+                }
+            });
+            document.getElementById('total').textContent = total > 0 ? `Сума замовлення: ${total} грн` : '';
+            document.getElementById('confirm-section').style.display = total > 0 ? 'block' : 'none';
+        }
+
+        function placeOrder() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const selectedItems = [];
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedItems.push(cb.parentElement.textContent.trim());
+                }
+            });
+
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const methodText = paymentMethod === 'cash' ? 'Готівкою' : 'Онлайн';
+            const date = new Date().toLocaleString();
+
+            const order = {
+                items: selectedItems,
+                payment: methodText,
+                date: date
+            };
+
+            // Зберегти в localStorage
+            let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+            history.push(order);
+            localStorage.setItem('orderHistory', JSON.stringify(history));
+
+            alert(`Дякуємо за замовлення!\nСпосіб оплати: ${methodText}`);
+            document.getElementById('menu-form').reset();
+            document.getElementById('confirm-section').style.display = 'none';
+            document.getElementById('total').textContent = '';
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const historyList = document.getElementById('order-history');
+            historyList.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<li style="text-align:center; color:#666;">Немає попередніх замовлень.</li>';
+                return;
+            }
+
+            history.reverse().forEach(order => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>Дата:</strong> ${order.date}<br>
+                    <strong>Позиції:</strong> ${order.items.join(', ')}<br>
+                    <strong>Оплата:</strong> ${order.payment}
+                `;
+                historyList.appendChild(li);
+            });
+        }
+
+        function clearHistory() {
+            if (confirm("Ви впевнені, що хочете очистити історію замовлень?")) {
+                localStorage.removeItem('orderHistory');
+                loadHistory();
+            }
+        }
+
+        // Завантажити історію при завантаженні сторінки
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>

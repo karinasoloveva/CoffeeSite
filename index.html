@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <title>Онлайн-кава</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, #f0f4f8, #d9e2ec);
+            color: #222;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark {
+            background: #121212;
+            color: #eee;
+        }
+        header {
+            background: #556ee6;
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 4px 12px rgba(85, 110, 230, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 1.1px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        main h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: inherit;
+        }
+        main p {
+            font-size: 20px;
+            color: inherit;
+            margin-bottom: 35px;
+            max-width: 480px;
+        }
+        .button {
+            background-color: #556ee6;
+            color: white;
+            padding: 14px 36px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 6px 16px rgba(85, 110, 230, 0.5);
+            transition: background-color 0.3s ease;
+            margin-bottom: 50px;
+            cursor: pointer;
+            border: none;
+        }
+        .button:hover {
+            background-color: #4058c4;
+        }
+        /* Галерея */
+        .gallery {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+        .gallery img {
+            width: 280px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .gallery img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        /* Пошук, фільтри, сортування */
+        .controls {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .controls > * {
+            flex: 1 1 200px;
+            min-width: 150px;
+            font-size: 16px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .controls > *:focus {
+            border-color: #556ee6;
+        }
+        .theme-toggle {
+            background: #556ee6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(85,110,230,0.4);
+            transition: background-color 0.3s ease;
+        }
+        .theme-toggle:hover {
+            background-color: #4058c4;
+        }
+        /* Карточки товаров */
+        .product-card {
+            width: 280px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: left;
+            transition: box-shadow 0.3s ease;
+            cursor: pointer;
+            color: #222;
+        }
+        body.dark .product-card {
+            background: #1e1e1e;
+            color: #eee;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        }
+        .product-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .product-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+        .product-card .info {
+            padding: 12px 16px;
+        }
+        .product-card .info h3 {
+            margin: 0 0 6px;
+            font-size: 20px;
+        }
+        .product-card .info p {
+            margin: 4px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        body.dark .product-card .info p {
+            color: #aaa;
+        }
+        .product-card .info .price {
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 6px;
+            color: #556ee6;
+        }
+        body.dark .product-card .info .price {
+            color: #80aaff;
+        }
+
+        /* --- Новое для авторизации --- */
+        #authModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; right:0; bottom:0;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #authModal.active {
+            display: flex;
+        }
+        #authModal .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 320px;
+            max-width: 90%;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            color: #222;
+        }
+        #authModal.dark .modal-content {
+            background: #222;
+            color: #eee;
+        }
+        #authModal label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        #authModal input[type="text"],
+        #authModal input[type="email"] {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+        }
+        #authModal input[type="text"]:focus,
+        #authModal input[type="email"]:focus {
+            border-color: #556ee6;
+        }
+        #authModal button {
+            background-color: #556ee6;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+        #authModal button:hover {
+            background-color: #4058c4;
+        }
+        #authModal .close-btn {
+            background: transparent;
+            color: #556ee6;
+            font-weight: 700;
+            font-size: 22px;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            top: 12px;
+            right: 18px;
+        }
+        /* Профиль */
+        #profileSection {
+            margin-top: 40px;
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(85, 110, 230, 0.2);
+            color: #222;
+        }
+        body.dark #profileSection {
+            background: #1e1e1e;
+            color: #eee;
+            box-shadow: 0 6px 20px rgba(128, 170, 255, 0.3);
+        }
+        #profileSection h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        #profileSection label {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        #profileSection input[type="text"],
+        #profileSection input[type="email"] {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+        }
+        body.dark #profileSection input[type="text"],
+        body.dark #profileSection input[type="email"] {
+            background: #333;
+            border-color: #556ee6;
+            color: #eee;
+        }
+        #profileSection button {
+            background-color: #556ee6;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        #profileSection button:hover {
+            background-color: #4058c4;
+        }
+        /* История заказов */
+        #ordersHistory {
+            margin-top: 30px;
+            text-align: left;
+        }
+        #ordersHistory h4 {
+            margin-bottom: 12px;
+        }
+        #ordersHistory ul {
+            list-style: none;
+            padding-left: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #ordersHistory ul li {
+            padding: 6px 0;
+            border-bottom: 1px solid #ccc;
+        }
+        body.dark #ordersHistory ul li {
+            border-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>☕ Онлайн-замовлення</h1>
+        <nav>
+            <a href="/menu">Меню</a>
+        </nav>
+        <div>
+            <!-- Добавлена кнопка входа/выхода -->
+            <button id="authBtn" class="button">Увійти</button>
+            <button class="theme-toggle" id="themeToggle">Світла/Темна тема</button>
+        </div>
+    </header>
+
+    <main>
+        <h2>Ласкаво просимо!</h2>
+        <p>Ваш смачний момент — лише в один клік!</p>
+        <a class="button" href="/menu">Перейти до меню</a>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Пошук по назві..." />
+            <select id="categoryFilter">
+                <option value="all">Всі категорії</option>
+                <option value="coffee">Кава</option>
+                <option value="tea">Чай</option>
+                <option value="dessert">Десерти</option>
+            </select>
+            <select id="sortSelect">
+                <option value="default">Без сортування</option>
+                <option value="priceAsc">Ціна: зростання</option>
+                <option value="priceDesc">Ціна: спадання</option>
+            </select>
+        </div>
+
+        <div id="productGallery" class="gallery">
+            <!-- Товари динамічно вставляються тут -->
+        </div>
+
+        <!-- Профіль пользователя -->
+        <section id="profileSection" style="display:none;">
+            <h3>Ваш профіль</h3>
+            <label for="profileName">Ім'я:</label>
+            <input type="text" id="profileName" />
+            <label for="profileEmail">Email:</label>
+            <input type="email" id="profileEmail" />
+            <button id="saveProfileBtn">Зберегти</button>
+
+            <!-- История заказов -->
+            <div id="ordersHistory">
+                <h4>Історія замовлень</h4>
+                <ul id="ordersList"></ul>
+            </div>
+
+            <button id="logoutBtn" style="margin-top:20px; background:#c0392b;">Вийти</button>
+        </section>
+    </main>
+
+    <!-- Модальное окно для авторизации -->
+    <div id="authModal" >
+        <div class="modal-content">
+            <button class="close-btn" id="closeAuthModal">&times;</button>
+            <h3>Вхід / Реєстрація</h3>
+            <label for="authName">Ім'я:</label>
+            <input type="text" id="authName" placeholder="Ваше ім'я" />
+            <label for="authEmail">Email:</label>
+            <input type="email" id="authEmail" placeholder="example@email.com" />
+            <button id="authSubmit">Увійти</button>
+        </div>
+    </div>
+
+<script>
+    // Дані товарів
+    const products = [
+        {id:1, name:"Кава Американо", category:"coffee", price:35, img:"https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80"},
+        {id:2, name:"Кава Лате", category:"coffee", price:40, img:"https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=600&q=80"},
+        {id:3, name:"Зелений чай", category:"tea", price:25, img:"https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg"},
+        {id:4, name:"Чорний чай", category:"tea", price:20, img:"https://sdmntprwestus2.oaiusercontent.com/files/00000000-9738-61f8-936f-c2627a4516b8/raw?se=2025-05-30T20%3A30%3A29Z&sp=r&sv=2024-08-04&sr=b&scid=88e503ce-9e7a-519c-90a6-78f0cf834155&skoid=30ec2761-8f41-44db-b282-7a0f8809659b&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-05-30T16%3A01%3A21Z&ske=2025-05-31T16%3A01%3A21Z&sks=b&skv=2024-08-04&sig=Naa3VMiro30haZ1AS5gkUuNlrGYSfbMV1QkdBx0Dqg4%3D"},
+        {id:5, name:"Шоколадний торт", category:"dessert", price:50, img:"https://images.pexels.com/photos/29642312/pexels-photo-29642312.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"},
+        {id:6, name:"Шоколадний фондан", category:"dessert", price:30, img:"https://images.pexels.com/photos/1854652/pexels-photo-1854652.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"}
+    ];
+
+    // Переменные для элементов
+    const gallery = document.getElementById('productGallery');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const sortSelect = document.getElementById('sortSelect');
+    const themeToggle = document.getElementById('themeToggle');
+
+    // Авторизация
+    const authBtn = document.getElementById('authBtn');
+    const authModal = document.getElementById('authModal');
+    const closeAuthModalBtn = document.getElementById('closeAuthModal');
+    const authNameInput = document.getElementById('authName');
+    const authEmailInput = document.getElementById('authEmail');
+    const authSubmitBtn = document.getElementById('authSubmit');
+
+    // Профиль
+    const profileSection = document.getElementById('profileSection');
+    const profileNameInput = document.getElementById('profileName');
+    const profileEmailInput = document.getElementById('profileEmail');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const ordersList = document.getElementById('ordersList');
+
+    // Состояние
+    let filteredProducts = [...products];
+    let user = null; // {name, email, orders: []}
+    let darkTheme = false;
+
+    // Рендер товаров
+    function renderProducts() {
+        gallery.innerHTML = '';
+        filteredProducts.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <img src="${p.img}" alt="${p.name}" />
+                <div class="info">
+                    <h3>${p.name}</h3>
+                    <p>Категорія: ${p.category}</p>
+                    <p class="price">${p.price} грн</p>
+                    <button class="button order-btn" data-id="${p.id}">Замовити</button>
+                </div>
+            `;
+            gallery.appendChild(card);
+        });
+    }
+
+    // Фильтрация и сортировка
+    function filterAndSortProducts() {
+        let temp = products;
+
+        // Поиск
+        const searchText = searchInput.value.toLowerCase();
+        if (searchText) {
+            temp = temp.filter(p => p.name.toLowerCase().includes(searchText));
+        }
+
+        // Фильтр по категории
+        const category = categoryFilter.value;
+        if (category !== 'all') {
+            temp = temp.filter(p => p.category === category);
+        }
+
+        // Сортировка
+        const sort = sortSelect.value;
+        if (sort === 'priceAsc') {
+            temp = temp.slice().sort((a,b) => a.price - b.price);
+        } else if (sort === 'priceDesc') {
+            temp = temp.slice().sort((a,b) => b.price - a.price);
+        }
+
+        filteredProducts = temp;
+        renderProducts();
+    }
+
+    // Обработка заказов
+    function handleOrder(id) {
+        if (!user) {
+            alert('Будь ласка, увійдіть, щоб зробити замовлення.');
+            openAuthModal();
+            return;
+        }
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+
+        // Добавить заказ в историю пользователя
+        user.orders.push({
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            date: new Date().toLocaleString()
+        });
+        saveUserToStorage();
+        alert(`Дякуємо за замовлення: ${product.name}`);
+        renderOrders();
+    }
+
+    // Рендер истории заказов
+    function renderOrders() {
+        ordersList.innerHTML = '';
+        if (!user || !user.orders.length) {
+            ordersList.innerHTML = '<li>Замовлень поки немає</li>';
+            return;
+        }
+        user.orders.slice().reverse().forEach(order => {
+            const li = document.createElement('li');
+            li.textContent = `${order.date} — ${order.name} (${order.price} грн)`;
+            ordersList.appendChild(li);
+        });
+    }
+
+    // Сохранение пользователя в localStorage
+    function saveUserToStorage() {
+        if (!user) return;
+        localStorage.setItem('coffeeUser', JSON.stringify(user));
+    }
+
+    // Загрузка пользователя из localStorage
+    function loadUserFromStorage() {
+        const saved = localStorage.getItem('coffeeUser');
+        if (!saved) return null;
+        return JSON.parse(saved);
+    }
+
+    // Открыть модалку авторизации
+    function openAuthModal() {
+        authModal.classList.add('active');
+        if (darkTheme) authModal.classList.add('dark');
+        else authModal.classList.remove('dark');
+    }
+    // Закрыть модалку
+    function closeAuthModal() {
+        authModal.classList.remove('active');
+        authNameInput.value = '';
+        authEmailInput.value = '';
+    }
+
+    // Обновить UI при входе/выходе
+    function updateAuthUI() {
+        if (user) {
+            authBtn.textContent = `Привіт, ${user.name}`;
+            authBtn.disabled = true;
+            profileSection.style.display = 'block';
+            profileNameInput.value = user.name;
+            profileEmailInput.value = user.email;
+            renderOrders();
+        } else {
+            authBtn.textContent = 'Увійти';
+            authBtn.disabled = false;
+            profileSection.style.display = 'none';
+        }
+    }
+
+    // Обработка входа
+    authSubmitBtn.addEventListener('click', () => {
+        const name = authNameInput.value.trim();
+        const email = authEmailInput.value.trim();
+        if (!name || !email) {
+            alert('Будь ласка, введіть ім\'я та email');
+            return;
+        }
+        // Регистрация/Вход (упрощенно)
+        user = loadUserFromStorage();
+        if (user && user.email.toLowerCase() !== email.toLowerCase()) {
+            // Новый пользователь
+            user = {name, email, orders: []};
+        } else if (!user) {
+            user = {name, email, orders: []};
+        }
+        // Обновим имя, если изменилось
+        user.name = name;
+        user.email = email;
+        saveUserToStorage();
+        closeAuthModal();
+        updateAuthUI();
+    });
+
+    closeAuthModalBtn.addEventListener('click', closeAuthModal);
+    authBtn.addEventListener('click', openAuthModal);
+
+    // Логика заказа по клику на кнопки
+    gallery.addEventListener('click', e => {
+        if (e.target.classList.contains('order-btn')) {
+            const id = +e.target.getAttribute('data-id');
+            handleOrder(id);
+        }
+    });
+
+    // Фильтры и поиск
+    searchInput.addEventListener('input', filterAndSortProducts);
+    categoryFilter.addEventListener('change', filterAndSortProducts);
+    sortSelect.addEventListener('change', filterAndSortProducts);
+
+    // Сохраняем профиль при изменениях
+    saveProfileBtn.addEventListener('click', () => {
+        if (!user) return alert('Будь ласка, увійдіть спочатку');
+        const newName = profileNameInput.value.trim();
+        const newEmail = profileEmailInput.value.trim();
+        if (!newName || !newEmail) {
+            alert('Ім\'я та email не можуть бути порожніми');
+            return;
+        }
+        user.name = newName;
+        user.email = newEmail;
+        saveUserToStorage();
+        alert('Профіль оновлено');
+        updateAuthUI();
+    });
+
+    // Выход
+    logoutBtn.addEventListener('click', () => {
+        user = null;
+        localStorage.removeItem('coffeeUser');
+        updateAuthUI();
+    });
+
+    // Тема
+    themeToggle.addEventListener('click', () => {
+        darkTheme = !darkTheme;
+        document.body.classList.toggle('dark', darkTheme);
+        if (authModal.classList.contains('active')) {
+            authModal.classList.toggle('dark', darkTheme);
+        }
+    });
+
+    // При загрузке
+    window.addEventListener('load', () => {
+        user = loadUserFromStorage();
+        updateAuthUI();
+        filterAndSortProducts();
+    });
+</script>
+
+</body>
+</html>
